@@ -6,7 +6,7 @@ pipeline {
         ACR_ID = "jdbacr"
         ACR_PASSWORD = credentials('ACR_PASSWORD')
         GITHUB_CREDENTIALS = credentials('GITHUB_TOKEN')
-        COMMIT_HASH = ''
+        commitHash = ""
         IMAGE_NAME = "jenkins-ci-test"
         CONTAINER_NAME = "jenkins-ci-test-container"
         REPO_URL = "https://github.com/manyb2ns/AKS-sample_web.git"
@@ -18,16 +18,21 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo "Cloning repository..."
+
+                // 현재 커밋 해시 가져오기
+                def commitHash = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                echo "Current Commit Hash: ${commitHash}"
+
+                // 디렉토리 초기화 및 clone
                 sh """
                 pwd && ls -al
-                rm -rf ./* ./.git
+                rm -rf ./* ./.git || true
                 git clone --branch ${BRANCH_NAME} ${REPO_URL} .
-                mkdir ./static
+                mkdir -p ./static
                 """
-                COMMIT_HASH = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
-                echo "Current Commit Hash: ${COMMIT_HASH}"
-                }
+            }
         }
+
         stage('Build Docker Image') {
             steps {
                 echo "Building Docker image..."
@@ -44,6 +49,7 @@ pipeline {
                 """
             }
         }
+
         stage('Web Page Request') {
             steps {
                 echo "Sending request to Flask application..."
@@ -59,6 +65,7 @@ pipeline {
                 }
             }
         }
+
         stage('Upload Image to ACR') {
           steps{
             echo "Uploading Image to ACR..."
@@ -74,12 +81,12 @@ pipeline {
     post {
         success {
             script {
-                updateGitHubStatus(COMMIT_HASH, 'SUCCESS', 'Pipeline succeeded.')
+                updateGitHubStatus(commitHash, 'SUCCESS', 'Pipeline succeeded.')
             }
         }
         failure {
             script {
-                updateGitHubStatus(COMMIT_HASH, 'FAILURE', 'Pipeline failed.')
+                updateGitHubStatus(commitHash, 'FAILURE', 'Pipeline failed.')
             }
         }
     }
