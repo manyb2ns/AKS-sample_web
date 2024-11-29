@@ -14,18 +14,6 @@ pipeline {
     }
 
     stages {
-        stage('Parse Webhook') {
-            steps {
-                script {
-                    def payload = readJSON text: env.postBody
-                    def branch = payload.ref.replace('refs/heads/', '')
-                    def commitHash = payload.after
-                    echo "Payload: ${payload}"
-                    echo "Branch: ${branch}"
-                    echo "Commit Hash: ${commitHash}"
-                }
-            }
-        }
         stage('Checkout') {
             steps {
                 script {
