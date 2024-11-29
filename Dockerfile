@@ -7,7 +7,7 @@ WORKDIR /app
 # 필요한 파일 복사
 COPY app.py /app
 COPY templates /app/templates
-COPY static /app/static
+# COPY static /app/static
 
 # Flask 설치
 RUN pip install Flask
