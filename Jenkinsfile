@@ -8,12 +8,23 @@ pipeline {
         GITHUB_CREDENTIALS = credentials('GITHUB_TOKEN')
         IMAGE_NAME = "jenkins-ci-test"
         CONTAINER_NAME = "jenkins-ci-test-container"
-        REPO_URL = "https://github.com/manyb2ns/AKS-sample_web.git"
+        REPO_URL = "https://github.com/manyb2ns/aks-web-with-jenkins.git"
         BRANCH_NAME = "dev-jdb"
         APP_PORT = "5000"
     }
 
     stages {
+        stage('Parse Webhook') {
+            steps {
+                script {
+                    def payload = readJSON text: env.GITHUB_PAYLOAD
+                    def branch = payload.ref.replace('refs/heads/', '')
+                    def commitHash = payload.after
+                    echo "Branch: ${branch}"
+                    echo "Commit Hash: ${commitHash}"
+                }
+            }
+        }
         stage('Checkout') {
             steps {
                 script {
