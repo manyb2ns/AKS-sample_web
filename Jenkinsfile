@@ -20,10 +20,6 @@ pipeline {
                 script {
                     echo "Cloning repository..."
 
-                    // 커밋 해시를 환경 변수에 저장
-                    env.commitHash = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
-                    echo "Current Commit Hash: ${env.commitHash}"
-
                     // 디렉토리 초기화 및 Git 클론
                     sh """
                     pwd && ls -al
@@ -31,6 +27,10 @@ pipeline {
                     git clone --branch ${BRANCH_NAME} ${REPO_URL} .
                     mkdir -p ./static
                     """
+
+                    // Git 커밋 해시 가져오기
+                    env.commitHash = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                    echo "Current Commit Hash: ${env.commitHash}"
                 }
             }
         }
