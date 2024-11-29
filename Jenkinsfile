@@ -17,19 +17,21 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo "Cloning repository..."
+                script {
+                    echo "Cloning repository..."
 
-                // 현재 커밋 해시 가져오기
-                def commitHash = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
-                echo "Current Commit Hash: ${commitHash}"
+                    // 커밋 해시를 환경 변수에 저장
+                    env.commitHash = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                    echo "Current Commit Hash: ${env.commitHash}"
 
-                // 디렉토리 초기화 및 clone
-                sh """
-                pwd && ls -al
-                rm -rf ./* ./.git || true
-                git clone --branch ${BRANCH_NAME} ${REPO_URL} .
-                mkdir -p ./static
-                """
+                    // 디렉토리 초기화 및 Git 클론
+                    sh """
+                    pwd && ls -al
+                    rm -rf ./* ./.git || true
+                    git clone --branch ${BRANCH_NAME} ${REPO_URL} .
+                    mkdir -p ./static
+                    """
+                }
             }
         }
 
