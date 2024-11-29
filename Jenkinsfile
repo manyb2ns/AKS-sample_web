@@ -5,6 +5,7 @@ pipeline {
         ACR_LOGINSERVER = "jdbacr.azurecr.io"
         ACR_ID = "jdbacr"
         ACR_PASSWORD = credentials('ACR_PASSWORD')
+        GITHUB_CREDENTIALS = credentials('GITHUB_TOKEN')
         IMAGE_NAME = "jenkins-ci-test"
         CONTAINER_NAME = "jenkins-ci-test-container"
         REPO_URL = "https://github.com/manyb2ns/AKS-sample_web.git"
@@ -15,15 +16,24 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo "Cloning repository..."
-                sh """
-                pwd && ls -al
-                rm -rf ./* ./.git
-                git clone --branch ${BRANCH_NAME} ${REPO_URL} .
-                mkdir ./static
-                """
+                script {
+                    echo "Cloning repository..."
+
+                    // 디렉토리 초기화 및 Git 클론
+                    sh """
+                    pwd && ls -al
+                    rm -rf ./* ./.git || true
+                    git clone --branch ${BRANCH_NAME} ${REPO_URL} .
+                    mkdir -p ./static
+                    """
+
+                    // Git 커밋 해시 가져오기
+                    env.commitHash = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                    echo "Current Commit Hash: ${env.commitHash}"
                 }
+            }
         }
+
         stage('Build Docker Image') {
             steps {
                 echo "Building Docker image..."
@@ -40,6 +50,7 @@ pipeline {
                 """
             }
         }
+
         stage('Web Page Request') {
             steps {
                 echo "Sending request to Flask application..."
@@ -55,6 +66,7 @@ pipeline {
                 }
             }
         }
+
         stage('Upload Image to ACR') {
           steps{
             echo "Uploading Image to ACR..."
@@ -66,4 +78,37 @@ pipeline {
           }
         }
   }
+
+    post {
+        success {
+            script {
+                updateGitHubStatus(env.commitHash, 'SUCCESS', 'Pipeline succeeded.')
+            }
+        }
+        failure {
+            script {
+                updateGitHubStatus(env.commitHash, 'FAILURE', 'Pipeline failed.')
+            }
+        }
+    }
+}
+
+// GitHub 상태 업데이트 함수
+def updateGitHubStatus(commitHash, status, description) {
+    echo "Updating GitHub Status:"
+    echo "Commit: ${commitHash}"
+    echo "State: ${status}"
+    echo "Description: ${description}"
+
+    sh """
+    curl -X POST -u ${GITHUB_CREDENTIALS} \
+        -H "Accept: application/vnd.github.v3+json" \
+        https://api.github.com/repos/manyb2ns/AKS-sample_web/statuses/${commitHash} \
+        -d '{
+            "state": "${status.toLowerCase()}",
+            "description": "${description}",
+            "context": "Jenkins CI"
+        }'
+    """
+
 }
