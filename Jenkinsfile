@@ -5,6 +5,8 @@ pipeline {
         ACR_LOGINSERVER = "jdbacr.azurecr.io"
         ACR_ID = "jdbacr"
         ACR_PASSWORD = credentials('ACR_PASSWORD')
+        GITHUB_CREDENTIALS = credentials('GITHUB_TOKEN')
+        COMMIT_HASH = ''
         IMAGE_NAME = "jenkins-ci-test"
         CONTAINER_NAME = "jenkins-ci-test-container"
         REPO_URL = "https://github.com/manyb2ns/AKS-sample_web.git"
@@ -22,6 +24,8 @@ pipeline {
                 git clone --branch ${BRANCH_NAME} ${REPO_URL} .
                 mkdir ./static
                 """
+                COMMIT_HASH = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                echo "Current Commit Hash: ${COMMIT_HASH}"
                 }
         }
         stage('Build Docker Image') {
@@ -66,4 +70,37 @@ pipeline {
           }
         }
   }
+
+    post {
+        success {
+            script {
+                updateGitHubStatus(COMMIT_HASH, 'SUCCESS', 'Pipeline succeeded.')
+            }
+        }
+        failure {
+            script {
+                updateGitHubStatus(COMMIT_HASH, 'FAILURE', 'Pipeline failed.')
+            }
+        }
+    }
+}
+
+// GitHub 상태 업데이트 함수
+def updateGitHubStatus(commitHash, status, description) {
+    echo "Updating GitHub Status:"
+    echo "Commit: ${commitHash}"
+    echo "State: ${status}"
+    echo "Description: ${description}"
+
+    sh """
+    curl -X POST -u ${GITHUB_CREDENTIALS} \
+        -H "Accept: application/vnd.github.v3+json" \
+        https://api.github.com/repos/manyb2ns/AKS-sample_web/statuses/${commitHash} \
+        -d '{
+            "state": "${status.toLowerCase()}",
+            "description": "${description}",
+            "context": "Jenkins CI"
+        }'
+    """
+
 }
