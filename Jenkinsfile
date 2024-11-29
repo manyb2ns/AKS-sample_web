@@ -6,7 +6,6 @@ pipeline {
         ACR_ID = "jdbacr"
         ACR_PASSWORD = credentials('ACR_PASSWORD')
         GITHUB_CREDENTIALS = credentials('GITHUB_TOKEN')
-        commitHash = ""
         IMAGE_NAME = "jenkins-ci-test"
         CONTAINER_NAME = "jenkins-ci-test-container"
         REPO_URL = "https://github.com/manyb2ns/AKS-sample_web.git"
@@ -83,12 +82,12 @@ pipeline {
     post {
         success {
             script {
-                updateGitHubStatus(commitHash, 'SUCCESS', 'Pipeline succeeded.')
+                updateGitHubStatus(env.commitHash, 'SUCCESS', 'Pipeline succeeded.')
             }
         }
         failure {
             script {
-                updateGitHubStatus(commitHash, 'FAILURE', 'Pipeline failed.')
+                updateGitHubStatus(env.commitHash, 'FAILURE', 'Pipeline failed.')
             }
         }
     }
