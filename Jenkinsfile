@@ -4,7 +4,7 @@ pipeline {
     environment {
         ACR_LOGINSERVER = "jdbacr.azurecr.io"
         ACR_ID = "jdbacr"
-        ACR_PASSWORD = "L6wKe+LHuD908nk7sEO1aFySm3PSC49NHnvEwshndj+ACRB7wwNz"
+        ACR_PASSWORD = credentials('ACR_PASSWORD')
         IMAGE_NAME = "jenkins-ci-test"
         CONTAINER_NAME = "jenkins-ci-test-container"
         REPO_URL = "https://github.com/manyb2ns/AKS-sample_web.git"
