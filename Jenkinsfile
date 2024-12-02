@@ -35,10 +35,15 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv(credentialsId: 'Sonarqube_Token_test', installationName:'SonarQube Server') {
-                }
+            // steps {
+            //     withSonarQubeEnv(credentialsId: 'Sonarqube_Token_test', installationName:'SonarQube Server') {
+            //     }
+            // }
+           def scannerHome = tool 'SonarScanner';
+            withSonarQubeEnv(credentialsId: 'Sonarqube_Token_test', installationName:'SonarQube Server') {
+            sh "${scannerHome}/bin/sonar-scanner"
             }
+
         }
 
         stage('Build Docker Image') {
