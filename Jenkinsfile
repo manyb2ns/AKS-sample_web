@@ -8,7 +8,7 @@ pipeline {
         GITHUB_CREDENTIALS = credentials('GITHUB_TOKEN')
         IMAGE_NAME = "jenkins-ci-test"
         CONTAINER_NAME = "jenkins-ci-test-container"
-        REPO_URL = "https://github.com/manyb2ns/AKS-sample_web.git"
+        REPO_URL = "https://github.com/manyb2ns/aks-web-with-jenkins.git"
         BRANCH_NAME = "dev-jdb"
         APP_PORT = "5000"
     }
@@ -30,6 +30,21 @@ pipeline {
                     // Git 커밋 해시 가져오기
                     env.commitHash = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
                     echo "Current Commit Hash: ${env.commitHash}"
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            // steps {
+            //     withSonarQubeEnv(credentialsId: 'Sonarqube_Token_test', installationName:'SonarQube Server') {
+            //     }
+
+            steps {
+                script {
+                    scannerHome = tool 'sonarqube-scanner'// must match the name of an actual scanner installation directory on your Jenkins build agent
+                }
+                withSonarQubeEnv(credentialsId: 'Sonarqube_Token_test', installationName:'SonarQube Server') {
+                    sh "${scannerHome}/bin/sonar-scanner"
                 }
             }
         }
