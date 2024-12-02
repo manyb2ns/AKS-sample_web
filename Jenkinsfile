@@ -38,12 +38,15 @@ pipeline {
             // steps {
             //     withSonarQubeEnv(credentialsId: 'Sonarqube_Token_test', installationName:'SonarQube Server') {
             //     }
-            // }
-           def scannerHome = tool 'SonarScanner';
-            withSonarQubeEnv(credentialsId: 'Sonarqube_Token_test', installationName:'SonarQube Server') {
-            sh "${scannerHome}/bin/sonar-scanner"
-            }
 
+            steps {
+                script {
+                    scannerHome = tool 'SonarQube Scanner'// must match the name of an actual scanner installation directory on your Jenkins build agent
+                }
+                withSonarQubeEnv(credentialsId: 'Sonarqube_Token_test', installationName:'SonarQube Server') {
+                    sh "${scannerHome}/bin/sonar-scanner"
+                }
+            }
         }
 
         stage('Build Docker Image') {
