@@ -8,7 +8,7 @@ pipeline {
         GITHUB_CREDENTIALS = credentials('GITHUB_TOKEN')
         IMAGE_NAME = "jenkins-ci-test"
         CONTAINER_NAME = "jenkins-ci-test-container"
-        REPO_URL = "https://github.com/manyb2ns/AKS-sample_web.git"
+        REPO_URL = "https://github.com/manyb2ns/aks-web-with-jenkins.git"
         BRANCH_NAME = "dev-jdb"
         APP_PORT = "5000"
     }
