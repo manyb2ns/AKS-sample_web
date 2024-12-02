@@ -41,7 +41,7 @@ pipeline {
 
             steps {
                 script {
-                    scannerHome = tool 'SonarQube Scanner'// must match the name of an actual scanner installation directory on your Jenkins build agent
+                    scannerHome = tool 'SonarQube Scanner 2.8'// must match the name of an actual scanner installation directory on your Jenkins build agent
                 }
                 withSonarQubeEnv(credentialsId: 'Sonarqube_Token_test', installationName:'SonarQube Server') {
                     sh "${scannerHome}/bin/sonar-scanner"
